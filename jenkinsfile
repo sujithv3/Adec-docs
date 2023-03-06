@@ -1,0 +1,61 @@
+pipeline {
+    agent any
+    environment {
+        //Environment variables
+        GITHUB_USERNAME = credentials('github-username')
+        GITHUB_ACCESS_TOKEN = credentials('github-access-token')
+        //skip stage
+        SKIP_TESTS = false
+        
+    }
+    options {
+      buildDiscarder(logRotator(numToKeepStr: '3')) 
+      disableConcurrentBuilds() 
+      timestamps() 
+      timeout(time: 10, unit: 'MINUTES')
+    }
+   
+    stages {
+        //checkout the code in stage SCM
+        stage('Clone repository') {
+          when {
+            expression { params.SKIP_TESTS != 'true' }
+             }
+          steps {
+        
+            cleanWs()
+            sh 'ls -lrt'
+            echo 'pulling the changes from soure code...'
+            checkout([$class: 'GitSCM', 
+            branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, 
+            extensions: [[$class: 'CleanBeforeCheckout']], 
+            gitTool: 'default',
+            submoduleCfg: [], 
+            userRemoteConfigs: [[credentialsId: 'github-access-token',
+            url: "https://${GITHUB_USERNAME}:${GITHUB_ACCESS_TOKEN}@github.com/Adecin/crowd_frontend.git"]]])
+            echo 'workspace for the project'
+            sh 'pwd'
+            echo 'pulled source code'
+            sh 'ls -lrt'
+            }
+        }
+        stage('install') {                    
+          steps {
+            sh 'npm cache clean --force'
+            sh 'npm install || exit 1'
+         }
+        }
+        stage('Build') {            
+          steps {
+            sh 'npm run build || exit 1'    
+         }
+        }
+        stage('Docker Build') {
+          steps {
+            sh "docker build -t my-react-app ."
+            sh 'docker images' 
+         }
+        }    
+      
+        }
+    }
