@@ -1,0 +1,104 @@
+AWS CRED
+
+Root use =Adec.development@gmail.com
+password = Adec123@
+---------------------------------------------------------------------------------------------------------------
+workspace for jenkins = /var/lib/jenkins/workspace/react
+
+
+sudo npm install
+sudo npm run build
+
+sudo npm install --global serve
+sudo serve -s build
+
+
+
+install forntend react-------------------------------------------------------------------------------------------
+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
+
+sudo apt install nodejs  
+sudo apt install npm
+node -v           //should be v18.x
+npm -v
+sudo npm install
+sudo chown -R jenkins:jenkins /var/lib/jenkins/workspace/
+sudo chmod -R 777 /var/lib/jenkins/workspace/
+sudo npm run build
+sudo chmod 777 /var/run/docker.sock
+docker build -t crowd-front-dev .           ------start from here
+docker run -p -d 3001:3000 crowd-front-dev
+
+
+  --finished---
+
+
+----------------------------------------------------------------------------------------------------------
+FOR BACKEND NODE
+
+--install all pkg--
+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
+
+sudo apt install nodejs  
+sudo apt install npm
+node -v           //should be v18.x
+npm -v
+
+---//go and write dockerfile
+npm install
+sudo chmod 777 /var/run/docker.sock
+docker build -t my-node-backend .     
+                        --------------//finish till this and db connection have to do before
+
+docker run -p 8080:8080 -e NODE_ENV=production my-node-backend (or)
+docker run -p 8080:8080  my-node-backend   //docker will take it as NODE_ENV=development
+
+
+
+
+------------------------------------------------------------------------------------
+---RDS installation till now   (have to check)
+
+INSTALL MYSQL ON UBUNTU
+
+sudo apt-get update
+sudo apt-get install mysql-server
+sudo systemctl status mysql
+sudo systemctl start mysql
+	
+
+mysql -h rds-instance-endpoint -P 3306 -u username -p
+and give the password	
+---------------
+UNINSTALL MYSQL
+
+sudo systemctl stop mysql
+sudo apt-get remove --purge mysql-server mysql-client mysql-common
+sudo apt-get purge mysql-server-core-* mysql-client-core-*
+sudo apt-get autoremove
+dpkg -l | grep mysql
+(or)
+
+sudo apt-get autoremove --purge mysql-server   //remove mysql server
+
+
+extra------------------------------------
+
+sudo apt-get install mysql-client
+sudo apt-get upgrade mysql-client
+
+
+
+
+
+
+
+
+
+
+
+
