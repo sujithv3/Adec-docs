@@ -91,6 +91,22 @@ extra------------------------------------
 sudo apt-get install mysql-client
 sudo apt-get upgrade mysql-client
 
+--------------------------------------------------
+To give root user permission to jenkins and ubuntu user
+
+sudo visudo
+
+jenkins ALL=(ALL) NOPASSWD: ALL   //add this ina acredential path
+ubuntu ALL=(ALL) NOPASSWD: ALL
+
+press cnt+o for save the file
+press ENTER then
+press cnt+x for exit the file
+
+sudo -l -U jenkins                //can check it 
+
+-----------------------------------------------
+
 
 
 
