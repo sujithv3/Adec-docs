@@ -5,29 +5,25 @@ pipeline {
         GITHUB_USERNAME = credentials('github-username')
         GITHUB_ACCESS_TOKEN = credentials('github-access-token')
         //skip stage
-        SKIP_TESTS = false
         
     }
     options {
       buildDiscarder(logRotator(numToKeepStr: '3')) 
       disableConcurrentBuilds() 
       timestamps() 
-      timeout(time: 10, unit: 'MINUTES')
+      timeout(time: 15, unit: 'MINUTES')
     }
    
     stages {
         //checkout the code in stage SCM
         stage('Clone repository') {
-          when {
-            expression { params.SKIP_TESTS != 'true' }
-             }
           steps {
         
             cleanWs()
             sh 'ls -lrt'
             echo 'pulling the changes from soure code...'
             checkout([$class: 'GitSCM', 
-            branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, 
+            branches: [[name: '*/dev']],  doGenerateSubmoduleConfigurations: false, 
             extensions: [[$class: 'CleanBeforeCheckout']], 
             gitTool: 'default',
             submoduleCfg: [], 
@@ -39,23 +35,113 @@ pipeline {
             sh 'ls -lrt'
             }
         }
-        stage('install') {                    
+        stage('install Dependencies') {                    
           steps {
             sh 'npm cache clean --force'
             sh 'npm install || exit 1'
          }
         }
-        stage('Build') {            
+        stage('Npm Build') {            
           steps {
             sh 'npm run build || exit 1'    
          }
         }
+        stage('removing image') {            
+          steps {
+            sh 'sudo chmod 777 /var/run/docker.sock'
+            //sh 'docker rmi -f crowd_frontend'   
+            sh 'docker images'
+            sh 'docker ps -a'
+         }
+        }
         stage('Docker Build') {
           steps {
-            sh "docker build -t my-react-app ."
+            sh 'docker build -t crowd_frontend .'
             sh 'docker images' 
          }
-        }    
-      
+        }
+        stage('docker Deploy') {
+          steps {
+            sh 'docker stop frontend_cont && docker rm frontend_cont' 
+            sh 'docker run -d --name frontend_cont -p 3001:3000  crowd_frontend'
+            sh 'docker ps -a' 
+         }
+        }
+  
+        }
+    }
+    
+    
+    ------------------------------
+    pipeline {
+    agent any
+    environment {
+        //Environment variables
+        GITHUB_USERNAME = credentials('github-username')
+        GITHUB_ACCESS_TOKEN = credentials('github-access-token')
+        //skip stage
+        
+    }
+    options {
+      buildDiscarder(logRotator(numToKeepStr: '3')) 
+      disableConcurrentBuilds() 
+      timestamps() 
+      timeout(time: 15, unit: 'MINUTES')
+    }
+   
+    stages {
+        //checkout the code in stage SCM
+        stage('Clone repository') {
+          steps {
+        
+            cleanWs()
+            sh 'ls -lrt'
+            echo 'pulling the changes from soure code...'
+            checkout([$class: 'GitSCM', 
+            branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, 
+            extensions: [[$class: 'CleanBeforeCheckout']], 
+            gitTool: 'default',
+            submoduleCfg: [], 
+            userRemoteConfigs: [[credentialsId: 'github-access-token',
+            url: "https://${GITHUB_USERNAME}:${GITHUB_ACCESS_TOKEN}@github.com/Adecin/crowd_admin_frontend.git"]]])
+            echo 'workspace for the project'
+            sh 'pwd'
+            echo 'pulled source code'
+            sh 'ls -lrt'
+            }
+        }
+        stage('install Dependencies') {                    
+          steps {
+            sh 'npm cache clean --force'
+            sh 'npm install || exit 1'
+         }
+        }
+        stage('Npm Build') {            
+          steps {
+            sh 'npm run build || exit 1'    
+         }
+        }
+        stage('removing image') {            
+          steps {
+            sh 'sudo chmod 777 /var/run/docker.sock'
+            sh 'docker rmi -f crowd_admin_frontend'   
+            sh 'docker images'
+            sh 'docker ps -a'
+         }
+        }
+        stage('Docker Build') {
+          steps {
+            sh 'docker build -t crowd_admin_frontend .'
+            sh 'docker images' 
+         }
+        }
+        stage('docker Deploy') {
+          steps {
+            sh 'docker stop admin_cont && docker rm admin_cont' 
+            sh 'docker run -d --name admin_cont -p 3002:3000 crowd_admin_frontend'
+            sh 'docker ps -a' 
+         }
+        }
+  
         }
     }
