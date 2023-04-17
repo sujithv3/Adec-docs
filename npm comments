@@ -1,7 +1,11 @@
 AWS CRED
 
-Root use =Adec.development@gmail.com
+Root user = Adec.development@gmail.com
 password = Adec123@
+
+frontend= http://3.109.250.135:3001/
+f admin = http://3.109.250.135:3002/
+backend = http://3.6.3.111:3035/api/role/list
 ---------------------------------------------------------------------------------------------------------------
 workspace for jenkins = /var/lib/jenkins/workspace/react
 
@@ -28,11 +32,18 @@ sudo chown -R jenkins:jenkins /var/lib/jenkins/workspace/
 sudo chmod -R 777 /var/lib/jenkins/workspace/
 sudo npm run build
 sudo chmod 777 /var/run/docker.sock
-docker build -t crowd-front-dev .           ------start from here
-docker run -p -d 3001:3000 crowd-front-dev
+docker build -t crowd_frontend .   
+docker build -t crowd_admin_frontend .         ------start from here
+docker stop f && docker rm f
+
+docker run -d --name frontend_cont -p 3001:3000  crowd_frontend  
+docker stop frontend_cont && docker rm frontend_cont            --frontend
 
 
-  --finished---
+docker run -d --name admin_cont -p 3002:3000 crowd_admin_frontend      
+docker stop admin_cont && docker rm admin_cont                   ---admin
+
+docker start frontend_cont admin_cont emqx
 
 
 ----------------------------------------------------------------------------------------------------------
@@ -57,8 +68,28 @@ docker build -t my-node-backend .
 docker run -p 8080:8080 -e NODE_ENV=production my-node-backend (or)
 docker run -p 8080:8080  my-node-backend   //docker will take it as NODE_ENV=development
 
+-------------------------------------------------------------------------------------
+backend forever
 
+sudo -i
+cd /var/www/html/      
+ls
+cd crowds
+git pull origin main
 
+user name= Adecin
+token for git = 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
+
+forever stopall
+lsof -i:3035
+kill -9 37380
+lsof -i:3035
+npm install
+forever start -o ./logs/out.log -e ./logs/error.log -c "npm start" ./
+ls
+cd logs
+ls
+tail -f out.log
 
 ------------------------------------------------------------------------------------
 ---RDS installation till now   (have to check)
@@ -73,7 +104,7 @@ sudo systemctl start mysql
 
 mysql -h rds-instance-endpoint -P 3306 -u username -p
 and give the password	
----------------
+-----------------------
 UNINSTALL MYSQL
 
 sudo systemctl stop mysql
@@ -106,6 +137,12 @@ press cnt+x for exit the file
 sudo -l -U jenkins                //can check it 
 
 -----------------------------------------------
+
+
+aws acc
+
+usr= duraiarasanjeeva@gmail.com
+psw = Duraiarasanjeeva1@
 
 
 
