@@ -1,0 +1,271 @@
+AWS CRED
+
+Root user = Adec.development@gmail.com
+password = Adec123@
+
+Adec front(prod)    = http://15.207.208.93:3003/    https://adecinfocomm.com  
+Adec back (prod)    = https://15.207.208.93:3025/   https://adecinfocomm.com:444/
+Aedc frontend (test)= http://3.109.250.135:1144/
+Adec backend        = http://3.109.250.135:3025/
+Crowd Frontend      = http://3.109.250.135:5001/
+Crowd admin         = http://3.109.250.135:5002/
+Crowd backend       = http://3.6.3.111:3035/api/role/list     ---database server
+crowd backend       = http://3.109.250.135:3035/api/role/list  
+Ecomme              = http://3.109.250.135:1122/
+Pdf generator       = http://3.109.250.135:3344/
+Sale frontend       = http://3.109.250.135:5566/
+Sale backend        = http://3.109.250.135:3009
+Time frontend       = http://3.109.250.135:2009/
+Time backend        = http://3.109.250.135:3010/
+ 
+
+demo 
+
+Frontend= http://3.109.250.135:3001/
+F admin = http://3.109.250.135:4433/
+
+---------------------------------------------------------------------------------------------------------------
+workspace for jenkins = /var/lib/jenkins/workspace/react
+
+
+sudo npm install
+sudo npm run build
+
+sudo npm install --global serve
+sudo serve -s build
+
+
+
+install forntend react-------------------------------------------------------------------------------------------
+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
+
+sudo apt install nodejs  
+node -v
+node -v           //should be v18.x
+npm -v
+sudo npm install
+sudo apt  install docker.io              //install docker 
+sudo chown -R jenkins:jenkins /var/lib/jenkins/workspace/
+sudo chmod -R 777 /var/lib/jenkins/workspace/
+sudo npm run build
+sudo chmod 777 /var/run/docker.sock
+docker build -t crowd_frontend .   
+docker build -t crowd_admin_frontend .         ------start from here
+docker stop f && docker rm f
+
+docker pull adecinfo/adec-front:latest   //from dockerhub for adec
+
+-----
+adec prod
+
+docker stop adec_front_cont && docker rm adec_front_cont
+docker rmi -f adecinfo/adec-prod-front:latest
+docker run -d --name adec_front_cont -p 3003:3000 adecinfo/adec-prod-front:latest
+
+docker stop adec_backend_cont && docker rm adec_backend_cont
+docker rmi -f adecinfo/adec-prod-back:latest 
+docker run -d --name adec_backend_cont -p 3025:3025 adecinfo/adec-prod-back:latest
+
+------------------------
+
+docker run -d --name crowd_test_front_cont -p 5001:3000  crowd_test_front
+  
+docker stop crowd_test_front_cont && docker rm crowd_test_front_cont            --frontend
+
+
+docker run -d --name crowd_test_admin_cont -p 5002:3000 crowd_test_admin
+
+docker stop crowd_test_admin_cont && docker rm crowd_test_admin_cont                   ---admin
+
+
+docker start crowd_dev_cont crowd_dev_admin_cont crowd_dev_back_cont emqx adec-front_cont timetrack_backend_cont timetrack_front_cont adec-dev-back-cont
+	
+docker start ecommerce_cont crowd_stag_front_con crowd_stag_admin_con resume-generator_cont sale_front_cont sale_backend_cont
+----
+
+docker start sales_dev_front_cont sales_dev_back_cont adec-front_cont adec-dev-back-cont time_dev_front_cont
+
+
+
+
+--------------------------------------------------------------------------------------------------------
+
+for demo
+
+docker run -d --name demo_frontend -p 3001:3000  crowd_demo_front
+ 
+docker run -d --name demo_admin -p 4433:3000 crowd_admin_frontend
+
+
+----------------------------------------------------------------------------------------------------------
+FOR BACKEND NODE
+
+--install all pkg--
+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
+
+sudo apt install nodejs  
+sudo apt install npm
+node -v           //should be v18.x
+npm -v
+
+---//go and write dockerfile
+npm install
+sudo chmod 777 /var/run/docker.sock
+docker build -t my-node-backend .     
+                        --------------//finish till this and db connection have to do before
+
+docker run -p 8080:8080 -e NODE_ENV=production my-node-backend (or)
+docker run -p 8080:8080  my-node-backend   //docker will take it as NODE_ENV=development
+
+-------------------------------------------------------------------------------------
+backend forever
+
+sudo -i
+cd /var/www/html/crowds    
+ls
+cd crowds
+git pull origin main
+
+user name= Adecin
+token for git = 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
+
+forever stopall
+lsof -i:3035
+kill -9 37380
+lsof -i:3035
+npm install
+forever start -o ./logs/out.log -e ./logs/error.log -c "npm start" ./
+ls
+cd logs && tail -f out.log
+
+ls
+tail -f out.log
+------------------	
+pm2 start build
+pm2 log 0
+pm2 reload 0
+-------------------
+After pull
+npm run build
+pm2 reload 0
+pm2 log 0
+
+
+
+------------------------------------------------------------------------------------
+---RDS installation till now   (have to check)
+
+INSTALL MYSQL ON UBUNTU
+
+sudo apt-get update
+sudo apt-get install mysql-server
+sudo systemctl status mysql
+sudo systemctl start mysql
+	
+
+mysql -h rds-instance-endpoint -P 3306 -u username -p
+and give the password	
+-----------------------
+UNINSTALL MYSQL
+
+sudo systemctl stop mysql
+sudo apt-get remove --purge mysql-server mysql-client mysql-common
+sudo apt-get purge mysql-server-core-* mysql-client-core-*
+sudo apt-get autoremove
+dpkg -l | grep mysql
+(or)
+
+sudo apt-get autoremove --purge mysql-server   //remove mysql server
+
+
+extra------------------------------------
+
+sudo apt-get install mysql-client
+sudo apt-get upgrade mysql-client
+
+--------------------------------------------------
+To give root user permission to jenkins and ubuntu user
+
+sudo visudo
+
+jenkins ALL=(ALL) NOPASSWD: ALL   //add this ina acredential path
+ubuntu ALL=(ALL) NOPASSWD: ALL
+
+press cnt+o for save the file
+press ENTER then
+press cnt+x for exit the file
+
+sudo -l -U jenkins                //can check it 
+
+-----------------------------------------------
+database
+
+docker build -t db_dev .
+docker build -t db_test .
+
+docker run -d -p 3306:3306 db_dev
+docker run -d -p 3306:3306 db_test
+
+backend 
+
+docker build -t back_dev .
+docker build -t back_test .
+
+
+docker run -d -p 3305:3305 back_dev
+docker run -d -p 3305:3305 back_test
+
+
+staging
+
+crowd_stag_front
+crowd_stag_front_con
+
+crowd_stag_admin
+crowd_stag_admin_con
+
+
+
+
+------------------------------------------------
+mongo db cred for sales
+
+mongodb://Test:test@3.6.3.111:27017/?authSource=testMongo
+
+username:Test,
+passwd:test,
+DBName:testDemo
+
+-------------------------------------------------
+
+
+aws acc
+
+usr= boopalknp@gmail.com
+psw = boopal55@
+
+jen 
+usr = boopal
+psw = boopal55@
+
+aws
+Dinu-- Mahe.vks@gmail.com
+Psw- Mahe@1999
+
+
+
+
+
+
+
+
+
+
+
+
+
+
