@@ -1,0 +1,172 @@
+---------------- normal database create 
+
+After installation 
+
+//getin to mongo db
+
+mongosh
+
+use admin
+
+db.auth("root", "root")
+
+
+db.createUser({
+  user: "<username>",
+  pwd: "<password>",
+  roles: [{ role: "readWrite", db: "<database>" }]
+})
+
+db.createUser({
+  user: "sale",
+  pwd: "sale234",
+  roles: [{ role: "readWrite", db: "salesprocess" }]
+})
+
+db.createUser({
+  user: "sale",
+  pwd: "sale234",
+  roles: [{ role: "readWrite", db: "timetracker" }]
+})
+
+db.createUser({
+  user: "adec",
+  pwd: "adec234",
+  roles: [{ role: "readWrite", db: "adecWeb" }]
+})
+
+or
+
+db.getUser("adec")    //show users
+
+db.createUser({
+  user: "adec",
+  pwd: "adec234",
+  roles: [
+    { role: "readWrite", db: "adecWeb" },
+    { role: "dbAdmin", db: "adecWeb" }
+  ]
+})
+
+---
+db.createUser({
+  user: "nova",
+  pwd: "nova1415",
+  roles: [
+    { role: "readWrite", db: "Nova-product" },
+    { role: "dbAdmin", db: "Nova-product" }
+  ]
+})
+
+--
+db.auth("<username>", "<password>")     //have to authendicate after creating a user
+db.auth("sale", "sale234")
+db.auth("adec", "adec234")
+db.auth("nova", "nova1415")
+
+
+///wont show database
+
+use mydatabase
+use salesprocess
+use timetracker
+use adec
+use Nova-product"
+
+
+db.mycollection.insertOne({ key: "value" })     //after u create a database have to use this cmt after that it will show db
+
+-------------------------------------
+add user in database 
+
+use adec
+
+
+db.createUser({
+  user: "adec",
+  pwd: "adec234",
+  roles: [
+    { role: "readWrite", db: "adecWeb" },
+    { role: "dbAdmin", db: "adecWeb" }
+  ]
+})
+
+
+
+----------------------------
+##use admin  , and view the database
+
+show dbs
+
+mongo --username <username> --password <password> --authenticationDatabase <authDatabase>    //Authenticate as a User with Sufficient Privileges
+mongo --username sale --password sale234 --authenticationDatabase timetracker
+
+
+db.grantRolesToUser("username", [{ role: "roleName", db: "timetracker" }])
+db.grantRolesToUser("sale", [{ role: "readWrite", db: "timetracker" }])
+
+
+
+exit
+
+----------------------------------
+
+mongo database 
+
+database : salesprocess
+username : sale
+pasword  : sale234
+
+database : timetracker
+username : sale
+pasword  : sale234
+
+database :adecWeb
+username :adec
+pasword  :adec234
+
+database : Nova-product
+username : nova
+pasword  : nova1415
+
+
+compas link = mongodb://username:password@host:port/database
+
+mongodb://adec:adec234@3.6.3.111:27017/adecWeb
+mongodb://nova:nova1415@3.6.3.111:27017/Nova-product
+
+-------------------------------------
+
+Dockerfile
+
+FROM mongo
+RUN mkdir -p /data/db
+EXPOSE 27017
+VOLUME /data/db
+
+#Docker to create a named volume and mount it to the /data/db directory inside the container
+
+-----------------------------------------------------------------
+
+Build the Docker image
+
+docker build -t my-mongodb .
+
+
+docker run -d -p 27017:27017 --name my-mongodb-container my-mongodb
+
+
+Run the MongoDB container with the specified username, password, and database name using environment variables:
+
+docker run -d -p 27017:27017 --name mongodb-container -e MONGO_INITDB_ROOT_USERNAME=sale -e MONGO_INITDB_ROOT_PASSWORD=sale234 -e MONGO_INITDB_DATABASE=salesprocess my-mongodb
+
+
+------------------------------------------------------------------
+
+FROM mongo:4.4
+WORKDIR /usr/src/app
+COPY mongod.conf /etc/mongod.conf
+EXPOSE 27017
+CMD ["mongod", "--config", "/etc/mongod.conf"]
+
+-------------------------------------------------------------------
