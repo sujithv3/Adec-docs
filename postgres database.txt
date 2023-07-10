@@ -1,0 +1,130 @@
+postgres install and setup 
+
+sudo apt update
+
+sudo apt install postgresql postgresql-contrib
+
+sudo systemctl start postgresql.service
+
+_____________________________________________________
+
+####DATABASE SETUP 
+
+sudo -i -u postgres   //switch to postgres account 
+
+psql
+\password postgres    //password for postgres & enter the pswd - adec123
+\q
+
+createuser --help
+
+createuser nova -P   #enter password - nova1415  // create user and password
+
+createdb customerdb -O nova      // craete db with owner
+createdb orderdb -O nova      // craete db with owner
+createdb paymentdb -O nova      // craete db with owner
+
+psql -h 127.0.0.1 -U nova customerdb   #and enther the user password  //connection chck
+
+
+remote connection -------
+
+//postgresql.conf
+sudo vi /etc/postgresql/14/main/postgresql.conf   -- in defualt user (ubuntu)
+
+#listen_addresses = 'localhost'   into    listen_addresses = '*' 
+
+//pg_hba.conf
+sudo vi /etc/postgresql/14/main/pg_hba.conf
+
+host    all             all             0.0.0.0/0            md5    //add the line in # IPv4 local connections:
+host    all             all             ::0/0                md5    //add the line in # IPv6 local connections: or add in the last line
+
+//restart the postgres
+sudo systemctl restart postgresql
+
+
+ss -nit | grep 5432   //check the port no is listening for
+
+--------------
+give 
+
+psql   -- get postgres acc
+
+\l   --list database and users
+\c <database name> -switch to the database
+
+--------------------
+postgres password = adec123
+role:
+username      = nova
+password      = nova1415
+
+Database for pgadmin
+
+
+customerdb
+
+Host name     = 3.6.3.111
+Port          = 5432
+database name = customerdb
+username      = nova
+password      = nova1415
+
+orderdb
+
+Host name     = 3.6.3.111
+Port          = 5432
+database name = orderdb
+username      = nova
+password      = nova1415
+
+paymentdb
+
+Host name     = 3.6.3.111
+Port          = 5432
+database name = paymentdb
+username      = nova
+password      = nova1415
+
+
+____________________ ANOTHER METHOD ____________________________________
+
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql.service
+sudo -i -u postgres
+
+//create a db and role inthe same name 
+//role
+createuser --interactive
+
+Output
+Enter name of role to add: nova
+Shall the new role be a superuser? (y/n) y
+
+//createdb
+createdb nova
+
+above 2 should be postgres@ip-172-31-91-13:
+
+// create a user like ubuntu give root usr permission (sudo adduser nova sudo  or sudo visudo  -> nova ALL=(ALL:ALL) ALL )
+sudo adduser nova
+//get into the user 
+sudo -i -u nova
+//get into postgres
+sudo -i -u postgres    //then apply pwsd for the user
+
+//exit all login as a created user
+sudo -i -u nova
+psql
+
+nova=#
+nova=# \conninfo   //connection check
+
+Output
+You are connected to database "nova" as user "nova" via socket in "/var/run/postgresql" at port "5432".
+
+
+
+
